@@ -1,0 +1,105 @@
+{
+  "_from": "adonis-kue",
+  "_id": "adonis-kue@5.0.1",
+  "_inBundle": false,
+  "_integrity": "sha512-YxuSH5po8UsCYFXW6BnJ4xy8P/1sEcCqwn0BNuTtOJB25mSiEXb/lEraU77ZEbo9WLM5Q+/MYy2QA7UhhzpeUw==",
+  "_location": "/adonis-kue",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "adonis-kue",
+    "name": "adonis-kue",
+    "escapedName": "adonis-kue",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/adonis-kue/-/adonis-kue-5.0.1.tgz",
+  "_shasum": "0ec8b1ac55198c5ae545e0c34df84d473443c4bf",
+  "_spec": "adonis-kue",
+  "_where": "E:\\cashineh\\New structure\\Cashineh-API-Adonis",
+  "author": {
+    "name": "Nicholas Rempel",
+    "email": "nbrempel@gmail.com"
+  },
+  "bugs": {
+    "url": "https://github.com/nrempel/adonis-kue/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "boxen": "^1.3.0",
+    "kue": "^0.11.6",
+    "lodash": "^4.17.10"
+  },
+  "deprecated": false,
+  "description": "Kue provider for the Adonis framework",
+  "devDependencies": {
+    "@adonisjs/ace": "^4.0.8",
+    "@adonisjs/fold": "^4.0.8",
+    "@adonisjs/framework": "^4.0.31",
+    "@adonisjs/redis": "^2.0.6",
+    "@adonisjs/sink": "^1.0.16",
+    "child_process": "^1.0.2",
+    "coveralls": "^3.0.1",
+    "dotenv": "^4.0.0",
+    "husky": "^0.13.4",
+    "japa": "^1.0.6",
+    "japa-cli": "^1.0.1",
+    "lint-staged": "^4.0.0",
+    "nyc": "^11.8.0",
+    "semver": "^5.5.0",
+    "standard": "^10.0.2",
+    "walk-sync": "^0.3.2"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "homepage": "https://github.com/nrempel/adonis-kue#readme",
+  "keywords": [
+    "adonis",
+    "kue",
+    "queue"
+  ],
+  "license": "MIT",
+  "lint-staged": {
+    "*.js": [
+      "npm run lint:fix",
+      "git add"
+    ]
+  },
+  "main": "src/Kue/index.js",
+  "name": "adonis-kue",
+  "nyc": {
+    "include": [
+      "src",
+      "providers",
+      "commands"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nrempel/adonis-kue.git"
+  },
+  "scripts": {
+    "coverage": "nyc report --reporter=text-lcov",
+    "lint": "standard",
+    "lint:fix": "standard --fix",
+    "posttest": "npm run coverage",
+    "precommit": "npm run test && lint-staged",
+    "prepush": "npm run test && lint-staged",
+    "pretest": "npm run lint",
+    "test": "ENV_SILENT=true NO_ANSI=false FORCE_COLOR=true nyc node ./bin/index.js --local"
+  },
+  "standard": {
+    "globals": [
+      "use",
+      "make"
+    ]
+  },
+  "version": "5.0.1"
+}
