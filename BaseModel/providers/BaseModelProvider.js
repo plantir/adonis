@@ -6,6 +6,9 @@ class BaseModelProvider extends ServiceProvider {
     this.app.singleton('vrwebdesign-adonis/Helper/BaseModel', app => {
       const Model = use('Model');
       return class BaseModel extends Model {
+        static get hidden() {
+          return ['is_deleted'];
+        }
         static _bootIfNotBooted() {
           if (this.name !== 'BaseModel') {
             super._bootIfNotBooted();
