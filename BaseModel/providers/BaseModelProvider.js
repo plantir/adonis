@@ -111,7 +111,7 @@ class BaseModelProvider extends ServiceProvider {
           query = query.paginate(page, perPage);
           return query;
         }
-        static paginate(result, page = 1, perPage = 10) {
+        static custom_paginate(result, page = 1, perPage = 10) {
           let offset = (page - 1) * perPage;
           let data = _.drop(result, offset).slice(0, perPage);
           return {
@@ -121,6 +121,20 @@ class BaseModelProvider extends ServiceProvider {
             lastPage: Math.ceil(result.length / perPage),
             data
           };
+        }
+        static async get_enums(columnName) {
+          let raw = `
+            SELECT COLUMN_TYPE 
+            FROM information_schema.\`COLUMNS\` 
+            WHERE TABLE_NAME = ? 
+            AND COLUMN_NAME = ?;
+            `;
+          let result = await Database.raw(raw, [this.table, columnName]);
+          let res = result[0][0].COLUMN_TYPE.toString();
+          let enums = res.replace(/(enum\()(.*)()\)/, '$2');
+          enums = enums.replace(/'/g, '');
+          enums = enums.split(',');
+          return enums;
         }
       };
     });
