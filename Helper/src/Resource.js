@@ -5,7 +5,7 @@ class ResourceController {
     response.send(data);
   }
   async store({ response, request }) {
-    let data = request.only(this.allowField);
+    let data = request.only(this.Model.allowField || []);
     let item = await this.Model.create(data);
     response.status(201).send(item);
   }
@@ -14,7 +14,7 @@ class ResourceController {
     response.status(200).send(item);
   }
   async update({ response, request, params: { id } }) {
-    const data = request.only(this.allowField);
+    const data = request.only(this.Model.allowField || []);
     let item = await this.Model.find(id);
     item.merge(data);
     await item.save();
