@@ -65,7 +65,7 @@ class BaseModelProvider extends ServiceProvider {
               if (withArray && withArray.indexOf(a) !== -1) {
                 if (opt === 'whereDosentHave') {
                   query = query.whereDoesntHave(a, builder => {
-                    builder.where(`${a}.${b}`, value);
+                    builder.where(b, value);
                   });
                 }
                 // else if(opt === 'or'){
