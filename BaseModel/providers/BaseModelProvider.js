@@ -62,7 +62,13 @@ class BaseModelProvider extends ServiceProvider {
             if (opt === 'like' && !value.includes(',')) value = `%${value}%`;
             if (property.includes('.')) {
               let [a, b] = property.split('.');
-              if (withArray && withArray.indexOf(a) !== -1) {
+              if (withArray.length) {
+                let exist_in_array = withArray.some(item => {
+                  return item == a || Object.keys(item)[0] == a;
+                });
+                if (!exist_in_array) {
+                  return;
+                }
                 if (opt === 'whereDosentHave') {
                   query = query.whereDoesntHave(a, builder => {
                     builder.where(b, value);
