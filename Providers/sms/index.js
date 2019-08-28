@@ -14,7 +14,7 @@ const { ServiceProvider } = require('@adonisjs/fold');
 class SMSProvider extends ServiceProvider {
   register() {
     this.app.singleton('Adonis/Addons/SMS', app => {
-      // const View = app.use('Adonis/Src/View');
+      const View = app.use('Adonis/Src/View');
       const Config = app.use('Adonis/Src/Config');
       const SMS = require('./src/SMS');
       return new SMS(Config, View);
