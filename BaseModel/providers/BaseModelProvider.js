@@ -66,15 +66,7 @@ async function format_chart_data(params) {
 function getDates(startDate, stopDate, diff, format) {
   var dateArray = [];
   var currentDate = moment(startDate);
-
-  if (diff > 365) {
-    var addon_time = "year";
-  } else if (diff > 31) {
-    var addon_time = "month";
-  } else {
-    var addon_time = "day";
-  }
-  var stopDate = moment(stopDate); //.add(1, addon_time);
+  var stopDate = moment(stopDate);
   while (currentDate <= stopDate) {
     dateArray.push(moment(currentDate).format(format));
     if (diff > 365) {
