@@ -46,27 +46,49 @@ async function format_chart_data(params) {
     // let total = _.sum(chart_array);
     chart_series.push(this_chart);
   }
-
+  if (type == "pie") {
+    let new_chart_data = [
+      {
+        name: yAxis_title,
+        data: []
+      }
+    ];
+    for (let serie of chart_series) {
+      new_chart_data[0].data.push({
+        name: serie.name,
+        y: _.sum(serie.data)
+      });
+    }
+    chart_series = new_chart_data;
+  }
   let chart = {
     type,
     title,
     subtitle,
-    series: chart_series,
-    xAxis: {
-      categories: date_range
-    },
-    yAxis: {
-      title: {
-        text: yAxis_title || "عنوان نمودار Y"
-      }
-    }
+    series: chart_series
+    // xAxis: {
+    //   categories: date_range
+    // },
+    // yAxis: {
+    //   title: {
+    //     text: yAxis_title || 'عنوان نمودار Y'
+    //   }
+    // }
   };
   return chart;
 }
 function getDates(startDate, stopDate, diff, format) {
   var dateArray = [];
   var currentDate = moment(startDate);
-  var stopDate = moment(stopDate);
+
+  if (diff > 365) {
+    var addon_time = "year";
+  } else if (diff > 31) {
+    var addon_time = "month";
+  } else {
+    var addon_time = "day";
+  }
+  var stopDate = moment(stopDate); //.add(1, addon_time);
   while (currentDate <= stopDate) {
     dateArray.push(moment(currentDate).format(format));
     if (diff > 365) {
@@ -223,7 +245,7 @@ class BaseModelProvider extends ServiceProvider {
         }
         static async chart(qs) {
           let {
-            filters,
+            filters = [],
             withArray,
             type,
             title,
@@ -232,12 +254,9 @@ class BaseModelProvider extends ServiceProvider {
             yAxis_title,
             series
           } = qs;
-          filters = filters ? JSON.parse(filters) : [];
-          if (!JSON.stringify(filters).includes("is_deleted")) {
-            filters.push("is_deleted:0:=");
-          }
+          filters.push("is_deleted:0:=");
           for (let item of series) {
-            filters = filters.concat(item.filters || []);
+            let custom_filter = filters.concat(item.filters || []);
             let query = super.query();
             if (withArray && withArray.length) {
               withArray.forEach(name => {
@@ -249,7 +268,7 @@ class BaseModelProvider extends ServiceProvider {
                 }
               });
             }
-            for (let filter of filters) {
+            for (let filter of custom_filter) {
               let [property, value, opt] = filter.split(":");
               if (opt === "like" && !value.includes(",")) value = `%${value}%`;
               if (property.includes(".")) {
