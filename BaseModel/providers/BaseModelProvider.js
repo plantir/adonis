@@ -2,6 +2,7 @@
 const { ServiceProvider } = require("@adonisjs/fold");
 const _ = require("lodash");
 const moment = require("moment-jalaali");
+moment.loadPersian();
 async function format_chart_data(params) {
   let {
     type,
@@ -65,29 +66,21 @@ async function format_chart_data(params) {
     type,
     title,
     subtitle,
-    series: chart_series
-    // xAxis: {
-    //   categories: date_range
-    // },
-    // yAxis: {
-    //   title: {
-    //     text: yAxis_title || 'عنوان نمودار Y'
-    //   }
-    // }
+    series: chart_series,
+    xAxis: {
+      categories: date_range
+    },
+    yAxis: {
+      title: {
+        text: yAxis_title || "عنوان نمودار Y"
+      }
+    }
   };
   return chart;
 }
 function getDates(startDate, stopDate, diff, format) {
   var dateArray = [];
   var currentDate = moment(startDate);
-
-  if (diff > 365) {
-    var addon_time = "year";
-  } else if (diff > 31) {
-    var addon_time = "month";
-  } else {
-    var addon_time = "day";
-  }
   var stopDate = moment(stopDate); //.add(1, addon_time);
   while (currentDate <= stopDate) {
     dateArray.push(moment(currentDate).format(format));
@@ -173,13 +166,7 @@ class BaseModelProvider extends ServiceProvider {
                   query = query.whereDoesntHave(a, builder => {
                     builder.where(b, value);
                   });
-                }
-                // else if(opt === 'or'){
-                //   value.split(',').map(item=>{
-                //   })
-                //   query = query.where(builder=> builder.where())
-                // }
-                else {
+                } else {
                   query = query.whereHas(a, builder => {
                     if (value.includes(",")) {
                       if (opt == "like") {
@@ -244,16 +231,7 @@ class BaseModelProvider extends ServiceProvider {
           return enums;
         }
         static async chart(qs) {
-          let {
-            filters = [],
-            withArray,
-            type,
-            title,
-            subtitle,
-            xAxis_title,
-            yAxis_title,
-            series
-          } = qs;
+          let { filters = [], withArray, series } = qs;
           filters.push("is_deleted:0:=");
           for (let item of series) {
             let custom_filter = filters.concat(item.filters || []);

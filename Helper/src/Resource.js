@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 class ResourceController {
   async index({ response, request }) {
     let data = await this.Model.listOption(request.get() || null);
@@ -25,8 +25,12 @@ class ResourceController {
     item.is_deleted = true;
     await item.save();
     response.send({
-      msg: 'success'
+      msg: "success"
     });
+  }
+  async chart({ request }) {
+    let qs = request.post();
+    return this.Model.chart(qs);
   }
 }
 module.exports = ResourceController;
