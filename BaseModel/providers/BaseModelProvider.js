@@ -232,6 +232,9 @@ class BaseModelProvider extends ServiceProvider {
         }
         static async chart(qs) {
           let { filters = [], withArray, series } = qs;
+          // if (!JSON.stringify(filters).includes("is_deleted")) {
+          //   filters.push("is_deleted:0:=");
+          // }
           filters.push("is_deleted:0:=");
           for (let item of series) {
             let custom_filter = filters.concat(item.filters || []);
