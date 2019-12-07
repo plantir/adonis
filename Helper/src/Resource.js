@@ -28,6 +28,16 @@ class ResourceController {
       msg: "success"
     });
   }
+
+  async recycle({ response, request, params: { id } }) {
+    let item = await this.Model.find(id);
+    item.is_deleted = false;
+    await item.save();
+    response.send({
+      msg: "success"
+    });
+  }
+
   async chart({ request }) {
     let qs = request.post();
     return this.Model.chart(qs);
