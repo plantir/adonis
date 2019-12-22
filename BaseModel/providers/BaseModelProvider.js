@@ -22,10 +22,7 @@ class BaseModelProvider extends ServiceProvider {
           let { filters, page, perPage, sort, withArray } = qs;
           let query = super.query();
           filters = (filters && JSON.parse(filters)) || [];
-          let has_delete_filter = filters.some(filter => {
-            return filter.startsWith("is_deleted");
-          });
-          if (!has_delete_filter) {
+          if (!JSON.stringify(filters).includes("is_deleted")) {
             filters.push("is_deleted:0:=");
           }
           page = parseInt(page) || 1;
@@ -190,17 +187,30 @@ class BaseModelProvider extends ServiceProvider {
             let [property, value, opt] = filter.split(":");
             if (opt === "like" && !value.includes(",")) value = `%${value}%`;
             if (property.includes(".")) {
-              let [a, b] = property.split(".");
-              if (withArray.length) {
-                let exist_in_array = withArray.some(item => {
-                  return item == a || Object.keys(item)[0] == a;
+              let [a, b, c] = property.split(".");
+              if (opt === "whereDosentHave") {
+                query = query.whereDoesntHave(a, builder => {
+                  builder.where(b, value);
                 });
-                if (!exist_in_array) {
-                  return;
-                }
-                if (opt === "whereDosentHave") {
-                  query = query.whereDoesntHave(a, builder => {
-                    builder.where(b, value);
+              } else {
+                if (c) {
+                  query = query.whereHas(a, builder1 => {
+                    builder1.whereHas(b, builder2 => {
+                      if (value.includes(",")) {
+                        if (opt == "like") {
+                          let value_array = value.split(",");
+                          let first_value = value_array.shift();
+                          builder2.where(c, opt || "=", first_value);
+                          for (let val of value_array) {
+                            builder2.orWhere(c, opt || "=", val);
+                          }
+                        } else {
+                          builder2.whereIn(c, value.split(","));
+                        }
+                      } else {
+                        builder2.where(c, opt || "=", value);
+                      }
+                    });
                   });
                 } else {
                   query = query.whereHas(a, builder => {
@@ -220,17 +230,17 @@ class BaseModelProvider extends ServiceProvider {
                     }
                   });
                 }
-                continue;
-              }
-            }
-            if (value.includes(",")) {
-              if (opt === "between") {
-                query = query.whereBetween(property, value.split(","));
-              } else {
-                query = query.whereIn(property, value.split(","));
               }
             } else {
-              query = query.where(property, opt || "=", value);
+              if (value.includes(",")) {
+                if (opt === "between") {
+                  query = query.whereBetween(property, value.split(","));
+                } else {
+                  query = query.whereIn(property, value.split(","));
+                }
+              } else {
+                query = query.where(property, opt || "=", value);
+              }
             }
           }
           return query;
