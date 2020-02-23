@@ -37,7 +37,6 @@ class BaseModelProvider extends ServiceProvider {
           perPage = parseInt(perPage) || 10;
           query = BaseModel.apply_sort(query, sort);
           query = BaseModel.apply_filters(query, filters, withArray);
-
           if (setHidden) {
             query.setHidden(setHidden);
           }
