@@ -1,7 +1,7 @@
 {
   "name": "@rocketseat/adonis-bull",
   "version": "0.2.0",
-  "main": "src/Queue.js",
+  "main": "index.js",
   "license": "MIT",
   "scripts": {
     "test:local": "node japaFile.js",
