@@ -92,7 +92,7 @@ class SMS {
 
   send({ view, data = {}, to, is_fast = false }) {
     this.to = to;
-    if (this.connection_type == 'sms_id' && is_fast) {
+    if (this.connection_type == 'sms_ir' && is_fast) {
       this.data = data;
       this.template = this.config[this.connection_type].templates[view];
       return this._send_fast_sms();
@@ -134,9 +134,9 @@ class SMS {
             to: [this.to],
             encoding: this.config[this.connection_type].encoding
           };
-          headers[
-            'Authorization'
-          ] = `Key ${this.config[this.connection_type].key}`;
+          headers['Authorization'] = `Key ${
+            this.config[this.connection_type].key
+          }`;
         } else if (this.connection_type == 'meli_payamak') {
           body = {
             username: this.config[this.connection_type].username,
