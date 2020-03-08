@@ -156,7 +156,7 @@ class SMS {
           },
           (err, response) => {
             if (
-              this.connection_type == 'sms_id' &&
+              this.connection_type == 'sms_ir' &&
               response.body.IsSuccessful
             ) {
               resolve(true);
