@@ -154,8 +154,9 @@ class SMS {
           body = {
             messages: [
               {
-                text: this.message,
+                body: this.message,
                 to: this.to,
+                from: this.from || this.config[this.connection_type].from,
               },
             ],
           };
