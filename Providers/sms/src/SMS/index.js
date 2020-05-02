@@ -19,10 +19,10 @@ class SMS {
         method: 'POST',
         url: this.config[this.connection_type].auth.url,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: this.config[this.connection_type].auth,
-        json: true
+        json: true,
       },
       (err, response) => {
         if (err) {
@@ -41,10 +41,10 @@ class SMS {
           method: 'POST',
           url: this.config[this.connection_type].auth.url,
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           },
           body: this.config[this.connection_type].auth,
-          json: true
+          json: true,
         },
         (err, response) => {
           if (err) {
@@ -75,9 +75,9 @@ class SMS {
           method: 'GET',
           url: 'http://ws.sms.ir/api/credit',
           headers: {
-            'x-sms-ir-secure-token': this.token
+            'x-sms-ir-secure-token': this.token,
           },
-          json: true
+          json: true,
         },
         (err, response) => {
           if (err) {
@@ -116,7 +116,7 @@ class SMS {
       try {
         let body;
         let headers = {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         };
         let url = this.config[this.connection_type].url;
         if (this.connection_type == 'sms_ir') {
@@ -124,7 +124,7 @@ class SMS {
           body = {
             Messages: [this.message],
             MobileNumbers: [this.to],
-            LineNumber: this.config[this.connection_type].lineNumber
+            LineNumber: this.config[this.connection_type].lineNumber,
           };
           headers['x-sms-ir-secure-token'] = this.token;
         } else if (this.connection_type == 'masgsm') {
@@ -132,7 +132,7 @@ class SMS {
             originator: this.config[this.connection_type].originator,
             message: this.message,
             to: [this.to],
-            encoding: this.config[this.connection_type].encoding
+            encoding: this.config[this.connection_type].encoding,
           };
           headers['Authorization'] = `Key ${
             this.config[this.connection_type].key
@@ -143,7 +143,21 @@ class SMS {
             password: this.config[this.connection_type].password,
             from: this.config[this.connection_type].from,
             text: this.message,
-            to: this.to
+            to: this.to,
+          };
+        } else if (this.connection_type == 'clickSend') {
+          let { username, password } = this.config[this.connection_type];
+          let auth =
+            'Basic ' +
+            new Buffer.from(username + ':' + password).toString('base64');
+          headers['Authorization'] = auth;
+          body = {
+            messages: [
+              {
+                text: this.message,
+                to: this.to,
+              },
+            ],
           };
         }
         request(
@@ -152,7 +166,7 @@ class SMS {
             url: url,
             headers: headers,
             body: body,
-            json: true
+            json: true,
           },
           (err, response) => {
             if (
@@ -168,6 +182,11 @@ class SMS {
             } else if (
               this.connection_type == 'meli_payamak' &&
               response.body.StrRetStatus == 'Ok'
+            ) {
+              resolve(true);
+            } else if (
+              this.connection_type == 'clickSend' &&
+              response.body.http_code == 200
             ) {
               resolve(true);
             } else {
@@ -188,13 +207,13 @@ class SMS {
         for (let key in this.data) {
           ParameterArray.push({
             Parameter: key,
-            ParameterValue: this.data[key]
+            ParameterValue: this.data[key],
           });
         }
         let body = {
           ParameterArray,
           Mobile: this.to,
-          TemplateId: this.template
+          TemplateId: this.template,
         };
         request(
           {
@@ -202,10 +221,10 @@ class SMS {
             url: this.config[this.connection_type].fast_url,
             headers: {
               'x-sms-ir-secure-token': this.token,
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
             },
             body: body,
-            json: true
+            json: true,
           },
           (err, response) => {
             response.body.IsSuccessful ? resolve(true) : reject(err);
