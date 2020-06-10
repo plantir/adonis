@@ -1,7 +1,10 @@
 'use strict';
 class TokenGenerator {
-  static generate() {
-    let token = (Math.floor(Math.random() * 1000000) + 1000000)
+  static generate(digits = 6) {
+    let token = (
+      Math.floor(Math.random() * 10 * parseInt(digits)) +
+      10 * parseInt(digits)
+    )
       .toString()
       .substring(1);
     return token;
