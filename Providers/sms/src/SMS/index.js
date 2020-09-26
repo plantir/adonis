@@ -118,7 +118,9 @@ class SMS {
         let headers = {
           'Content-Type': 'application/json',
         };
+        let method = 'POST'
         let url = this.config[this.connection_type].url;
+        let query = null
         if (this.connection_type == 'sms_ir') {
           await this.getToken();
           body = {
@@ -160,11 +162,19 @@ class SMS {
               },
             ],
           };
+        }else if(this.connection_type == 'kavenegar'){
+          method = 'GET';
+          query = {
+            message:this.message,
+            receptor:this.to,
+            sender:this.from || this.config[this.connection_type].from
+          }
         }
         request(
           {
-            method: 'POST',
+            method:method,
             url: url,
+            qs:query,
             headers: headers,
             body: body,
             json: true,
@@ -190,7 +200,12 @@ class SMS {
               response.body.http_code == 200
             ) {
               resolve(true);
-            } else {
+            } else if (
+              this.connection_type == 'kavenegar' &&
+              response.statusCode == 200
+            ) {
+              resolve(true);
+            }else {
               reject(err);
             }
           }
