@@ -18,6 +18,77 @@ class BaseModelProvider extends ServiceProvider {
             super._bootIfNotBooted();
           }
         }
+                static async excelOption( { headers, body }, response) {
+          var workbook = new Excel.Workbook();
+          var worksheet = workbook.addWorksheet('your_worksheet');
+          let columns = []
+          for (let header of headers) {
+              columns.push({ header: header.text, key: header.value,  width: 15})
+          }
+          worksheet.columns = columns
+          for (let order of body) {
+              var row = {}
+              for (let header of headers) {
+                  let user_header_index = headers.indexOf(header)
+                  let column_header_key = worksheet.columns[user_header_index].key
+                  let res = this.calculateValue(order, header)
+                  row[column_header_key] = res
+              }
+              worksheet.addRow(row);
+            }
+            let name = moment().format('YYYY-MM-DD hh-mm-ss')
+            var fileName = `${name}.xlsx`
+            await mkdirp('tmp/custom_output/')
+            await workbook.xlsx.writeFile(`tmp/custom_output/${fileName}`)
+      
+            let excel_location = Helpers.tmpPath(`custom_output/${fileName}`);
+            if (!excel_location) {
+              return response.status(404).send('not found');
+            }
+            response.status(200).download(excel_location);
+            setTimeout(() => { 
+                fs.unlink(excel_location, (err) => {
+                    if (err) {
+                        console.log("failed to delete local excel:"+err);
+                    } else {
+                        console.log('successfully deleted local excel');                                
+                    }
+                });
+            }, 10000);
+          return
+        }
+        static async pdfOption(data, response) {
+          const Helpers = use('Helpers');
+          const View = use('View');
+          const mkdirp = use('mkdirp')
+          const Drive = use("Drive");
+          View.global('calculateValue', this.calculateValue);
+          let html = View.render('pdf_test', data);
+          const buffer = await BaseModel._createPDF(html);
+          let name = moment().format('YYYY-MM-DD_hh-mm-ss')
+          var fileName = `${name}.pdf`
+          await mkdirp('tmp/custom_output/')
+          await Drive.put(Helpers.tmpPath(`custom_output/${fileName}`), buffer);
+          let pdf_location = Helpers.tmpPath(`custom_output/${fileName}`);
+          if (!pdf_location) {
+            return response.status(404).send('not found');
+          }
+          response.safeHeader('Content-type', 'application/pdf')
+          response.safeHeader(
+            'Content-Disposition',
+            `attachment; filename=custom_output/${fileName}`
+          )
+          response.status(200).download(pdf_location);
+          setTimeout(() => { 
+              fs.unlink(pdf_location, (err) => {
+                  if (err) {
+                      console.log("failed to delete local pdf:"+err);
+                  } else {
+                      console.log('successfully deleted local pdf');                                
+                  }
+              });
+          }, 10000);  
+        } 
         static listOption(qs) {
           let {
             filters,
