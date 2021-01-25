@@ -1,14 +1,14 @@
-const request = require('request');
+const request = require("request");
 class SMS {
   constructor(Config, View) {
-    this.config = Config.get('sms');
+    this.config = Config.get("sms");
     this.connection_type = this.config.connection;
     this.view = View;
     this.token;
     this.credit;
     this.data;
     this.template;
-    if (this.connection_type == 'sms_ir') {
+    if (this.connection_type == "sms_ir") {
       this.initial_token();
     }
   }
@@ -16,10 +16,10 @@ class SMS {
   initial_token() {
     request(
       {
-        method: 'POST',
+        method: "POST",
         url: this.config[this.connection_type].auth.url,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: this.config[this.connection_type].auth,
         json: true,
@@ -38,10 +38,10 @@ class SMS {
     return new Promise((resolve, reject) => {
       request(
         {
-          method: 'POST',
+          method: "POST",
           url: this.config[this.connection_type].auth.url,
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: this.config[this.connection_type].auth,
           json: true,
@@ -72,10 +72,10 @@ class SMS {
     return new Promise((resolve, reject) => {
       request(
         {
-          method: 'GET',
-          url: 'http://ws.sms.ir/api/credit',
+          method: "GET",
+          url: "http://ws.sms.ir/api/credit",
           headers: {
-            'x-sms-ir-secure-token': this.token,
+            "x-sms-ir-secure-token": this.token,
           },
           json: true,
         },
@@ -92,7 +92,7 @@ class SMS {
 
   send({ view, data = {}, to, is_fast = false }) {
     this.to = to;
-    if (this.connection_type == 'sms_ir' && is_fast) {
+    if (is_fast) {
       this.data = data;
       this.template = this.config[this.connection_type].templates[view];
       return this._send_fast_sms();
@@ -116,30 +116,30 @@ class SMS {
       try {
         let body;
         let headers = {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         };
-        let method = 'POST'
+        let method = "POST";
         let url = this.config[this.connection_type].url;
-        let query = null
-        if (this.connection_type == 'sms_ir') {
+        let query = null;
+        if (this.connection_type == "sms_ir") {
           await this.getToken();
           body = {
             Messages: [this.message],
             MobileNumbers: [this.to],
             LineNumber: this.config[this.connection_type].lineNumber,
           };
-          headers['x-sms-ir-secure-token'] = this.token;
-        } else if (this.connection_type == 'masgsm') {
+          headers["x-sms-ir-secure-token"] = this.token;
+        } else if (this.connection_type == "masgsm") {
           body = {
             originator: this.config[this.connection_type].originator,
             message: this.message,
             to: [this.to],
             encoding: this.config[this.connection_type].encoding,
           };
-          headers['Authorization'] = `Key ${
+          headers["Authorization"] = `Key ${
             this.config[this.connection_type].key
           }`;
-        } else if (this.connection_type == 'meli_payamak') {
+        } else if (this.connection_type == "meli_payamak") {
           body = {
             username: this.config[this.connection_type].username,
             password: this.config[this.connection_type].password,
@@ -147,12 +147,12 @@ class SMS {
             text: this.message,
             to: this.to,
           };
-        } else if (this.connection_type == 'clickSend') {
+        } else if (this.connection_type == "clickSend") {
           let { username, password } = this.config[this.connection_type];
           let auth =
-            'Basic ' +
-            new Buffer.from(username + ':' + password).toString('base64');
-          headers['Authorization'] = auth;
+            "Basic " +
+            new Buffer.from(username + ":" + password).toString("base64");
+          headers["Authorization"] = auth;
           body = {
             messages: [
               {
@@ -162,50 +162,50 @@ class SMS {
               },
             ],
           };
-        }else if(this.connection_type == 'kavenegar'){
-          method = 'GET';
+        } else if (this.connection_type == "kavenegar") {
+          method = "GET";
           query = {
-            message:this.message,
-            receptor:this.to,
-            sender:this.from || this.config[this.connection_type].from
-          }
+            message: this.message,
+            receptor: this.to,
+            sender: this.from || this.config[this.connection_type].from,
+          };
         }
         request(
           {
-            method:method,
+            method: method,
             url: url,
-            qs:query,
+            qs: query,
             headers: headers,
             body: body,
             json: true,
           },
           (err, response) => {
             if (
-              this.connection_type == 'sms_ir' &&
+              this.connection_type == "sms_ir" &&
               response.body.IsSuccessful
             ) {
               resolve(true);
             } else if (
-              this.connection_type == 'masgsm' &&
+              this.connection_type == "masgsm" &&
               response.body.status.code == 200
             ) {
               resolve(true);
             } else if (
-              this.connection_type == 'meli_payamak' &&
-              response.body.StrRetStatus == 'Ok'
+              this.connection_type == "meli_payamak" &&
+              response.body.StrRetStatus == "Ok"
             ) {
               resolve(true);
             } else if (
-              this.connection_type == 'clickSend' &&
+              this.connection_type == "clickSend" &&
               response.body.http_code == 200
             ) {
               resolve(true);
             } else if (
-              this.connection_type == 'kavenegar' &&
+              this.connection_type == "kavenegar" &&
               response.statusCode == 200
             ) {
               resolve(true);
-            }else {
+            } else {
               reject(err);
             }
           }
@@ -218,32 +218,64 @@ class SMS {
   async _send_fast_sms() {
     return new Promise(async (resolve, reject) => {
       try {
-        await this.getToken();
-        let ParameterArray = [];
-        for (let key in this.data) {
-          ParameterArray.push({
-            Parameter: key,
-            ParameterValue: this.data[key],
-          });
-        }
-        let body = {
-          ParameterArray,
-          Mobile: this.to,
-          TemplateId: this.template,
+        let body;
+        let headers = {
+          "Content-Type": "application/json",
         };
+        let method = "POST";
+        let url = this.config[this.connection_type].fast_url;
+        let query = null;
+        if (this.connection_type == "sms_ir") {
+          await this.getToken();
+          headers["x-sms-ir-secure-token"] = this.token;
+          let ParameterArray = [];
+          for (let key in this.data) {
+            ParameterArray.push({
+              Parameter: key,
+              ParameterValue: this.data[key],
+            });
+          }
+          body = {
+            ParameterArray,
+            Mobile: this.to,
+            TemplateId: this.template,
+          };
+        } else if (this.connection_type == "kavenegar") {
+          method = "GET";
+          query = {
+            receptor: this.to,
+            template: this.template,
+          };
+          let index = 1;
+          for (let key in this.data) {
+            let token_key = index == 1 ? "" : index;
+            query["token" + token_key] = this.data[key];
+            index += 1;
+          }
+        }
         request(
           {
-            method: 'POST',
-            url: this.config[this.connection_type].fast_url,
-            headers: {
-              'x-sms-ir-secure-token': this.token,
-              'Content-Type': 'application/json',
-            },
+            method: method,
+            url: url,
+            qs: query,
+            headers: headers,
             body: body,
             json: true,
           },
           (err, response) => {
-            response.body.IsSuccessful ? resolve(true) : reject(err);
+            if (
+              this.connection_type == "sms_ir" &&
+              response.body.IsSuccessful
+            ) {
+              resolve(true);
+            } else if (
+              this.connection_type == "kavenegar" &&
+              response.statusCode == 200
+            ) {
+              resolve(true);
+            } else {
+              reject(err);
+            }
           }
         );
       } catch (error) {
