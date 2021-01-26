@@ -68,6 +68,7 @@ class SMS {
     }
     return this;
   }
+
   async getCredit() {
     return new Promise((resolve, reject) => {
       request(
@@ -92,15 +93,15 @@ class SMS {
 
   send({ view, data = {}, to, is_fast = false }) {
     this.to = to;
-    if (is_fast) {
-      this.data = data;
-      this.template = this.config[this.connection_type].templates[view];
-      return this._send_fast_sms();
-    }
     try {
       this.message = this.view.render(view, data);
     } catch (error) {
       this.message = view;
+    }
+    if (is_fast) {
+      this.data = data;
+      this.template = this.config[this.connection_type].templates[view];
+      return this._send_fast_sms();
     }
     return this._sendSMS();
   }
@@ -184,27 +185,27 @@ class SMS {
               this.connection_type == "sms_ir" &&
               response.body.IsSuccessful
             ) {
-              resolve(true);
+              resolve(this.message);
             } else if (
               this.connection_type == "masgsm" &&
               response.body.status.code == 200
             ) {
-              resolve(true);
+              resolve(this.message);
             } else if (
               this.connection_type == "meli_payamak" &&
               response.body.StrRetStatus == "Ok"
             ) {
-              resolve(true);
+              resolve(this.message);
             } else if (
               this.connection_type == "clickSend" &&
               response.body.http_code == 200
             ) {
-              resolve(true);
+              resolve(this.message);
             } else if (
               this.connection_type == "kavenegar" &&
               response.statusCode == 200
             ) {
-              resolve(true);
+              resolve(this.message);
             } else {
               reject(err);
             }
@@ -267,12 +268,12 @@ class SMS {
               this.connection_type == "sms_ir" &&
               response.body.IsSuccessful
             ) {
-              resolve(true);
+              resolve(this.message);
             } else if (
               this.connection_type == "kavenegar" &&
               response.statusCode == 200
             ) {
-              resolve(true);
+              resolve(this.message);
             } else {
               reject(err);
             }
