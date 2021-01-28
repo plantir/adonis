@@ -1,20 +1,20 @@
-'use strict';
-const { ServiceProvider } = require('@adonisjs/fold');
-const _ = require('lodash');
-const moment = require('moment-jalaali');
-moment.loadPersian({ dialect: 'persian-modern' });
+"use strict";
+const { ServiceProvider } = require("@adonisjs/fold");
+const _ = require("lodash");
+const moment = require("moment-jalaali");
+moment.loadPersian({ dialect: "persian-modern" });
 
 class BaseModelProvider extends ServiceProvider {
   register() {
-    this.app.singleton('vrwebdesign-adonis/Helper/BaseModel', app => {
-      const Model = use('Model');
-      const Database = use('Database');
+    this.app.singleton("vrwebdesign-adonis/Helper/BaseModel", (app) => {
+      const Model = use("Model");
+      const Database = use("Database");
       return class BaseModel extends Model {
         static get hidden() {
-          return ['is_deleted'];
+          return ["is_deleted"];
         }
         static _bootIfNotBooted() {
-          if (this.name !== 'BaseModel') {
+          if (this.name !== "BaseModel") {
             super._bootIfNotBooted();
           }
         }
@@ -26,12 +26,14 @@ class BaseModelProvider extends ServiceProvider {
             sort,
             withArray,
             setVisible,
-            setHidden
+            setHidden,
           } = qs;
           let query = super.query();
           filters = (filters && JSON.parse(filters)) || [];
-          if (!JSON.stringify(filters).includes('is_deleted')) {
-            filters.push('is_deleted:0:=');
+          if (this.softDelete !== false) {
+            if (!JSON.stringify(filters).includes("is_deleted")) {
+              filters.push("is_deleted:0:=");
+            }
           }
           page = parseInt(page) || 1;
           perPage = parseInt(perPage) || 10;
@@ -54,7 +56,7 @@ class BaseModelProvider extends ServiceProvider {
             perPage,
             total: result.length,
             lastPage: Math.ceil(result.length / perPage),
-            data
+            data,
           };
         }
         static async get_enums(columnName) {
@@ -66,14 +68,14 @@ class BaseModelProvider extends ServiceProvider {
             `;
           let result = await Database.raw(raw, [this.table, columnName]);
           let res = result[0][0].COLUMN_TYPE.toString();
-          let enums = res.replace(/(enum\()(.*)()\)/, '$2');
-          enums = enums.replace(/'/g, '');
-          enums = enums.split(',');
+          let enums = res.replace(/(enum\()(.*)()\)/, "$2");
+          enums = enums.replace(/'/g, "");
+          enums = enums.split(",");
           return enums;
         }
         static async chart(qs) {
           let { filters = [], withArray, series } = qs;
-          filters.push('is_deleted:0:=');
+          filters.push("is_deleted:0:=");
           for (let item of series) {
             let custom_filters = filters.concat(item.filters || []);
             let query = super.query();
@@ -92,16 +94,16 @@ class BaseModelProvider extends ServiceProvider {
             yAxis_title,
             start_date,
             end_date,
-            series
+            series,
           } = params;
           end_date = end_date || moment.now();
-          start_date = start_date || moment(end_date).subtract(1, 'month');
-          let diff = moment(end_date).diff(moment(start_date), 'days');
-          let format = 'jYYYY-jMM-jDD';
+          start_date = start_date || moment(end_date).subtract(1, "month");
+          let diff = moment(end_date).diff(moment(start_date), "days");
+          let format = "jYYYY-jMM-jDD";
           if (diff > 365) {
-            format = 'jYYYY';
+            format = "jYYYY";
           } else if (diff > 31) {
-            format = 'jMMMM jYYYY';
+            format = "jMMMM jYYYY";
           }
           let date_range = BaseModel.getDates(
             start_date,
@@ -115,7 +117,7 @@ class BaseModelProvider extends ServiceProvider {
             data = data.toJSON();
             let field = serie.field;
             let count = {};
-            data.map(item => {
+            data.map((item) => {
               if (item.created_at) {
                 let x = moment(item.created_at).format(format);
                 count[x] = count[x] || 0;
@@ -132,17 +134,17 @@ class BaseModelProvider extends ServiceProvider {
             // let total = _.sum(chart_array);
             chart_series.push(this_chart);
           }
-          if (type == 'pie') {
+          if (type == "pie") {
             let new_chart_data = [
               {
                 name: yAxis_title,
-                data: []
-              }
+                data: [],
+              },
             ];
             for (let serie of chart_series) {
               new_chart_data[0].data.push({
                 name: serie.name,
-                y: _.sum(serie.data)
+                y: _.sum(serie.data),
               });
             }
             chart_series = new_chart_data;
@@ -153,13 +155,13 @@ class BaseModelProvider extends ServiceProvider {
             subtitle,
             series: chart_series,
             xAxis: {
-              categories: date_range
+              categories: date_range,
             },
             yAxis: {
               title: {
-                text: yAxis_title || 'عنوان نمودار Y'
-              }
-            }
+                text: yAxis_title || "عنوان نمودار Y",
+              },
+            },
           };
           return chart;
         }
@@ -167,29 +169,29 @@ class BaseModelProvider extends ServiceProvider {
           var dateArray = [];
           var currentDate = moment(startDate);
           if (diff > 365) {
-            var addon_time = 'year';
+            var addon_time = "year";
           } else if (diff > 31) {
-            var addon_time = 'month';
+            var addon_time = "month";
           } else {
-            var addon_time = 'day';
+            var addon_time = "day";
           }
           var stopDate = moment(stopDate); //.add(1, addon_time);
           while (currentDate <= stopDate) {
             dateArray.push(moment(currentDate).format(format));
             if (diff > 365) {
-              currentDate = moment(currentDate).add(1, 'jyear');
+              currentDate = moment(currentDate).add(1, "jyear");
             } else if (diff > 31) {
-              currentDate = moment(currentDate).add(1, 'jmonth');
+              currentDate = moment(currentDate).add(1, "jmonth");
             } else {
-              currentDate = moment(currentDate).add(1, 'days');
+              currentDate = moment(currentDate).add(1, "days");
             }
           }
           return dateArray;
         }
         static apply_filters(query, filters, withArray) {
           if (withArray && withArray.length) {
-            withArray.forEach(name => {
-              if (typeof name === 'object') {
+            withArray.forEach((name) => {
+              if (typeof name === "object") {
                 let with_name = Object.keys(name)[0];
                 query = query.with(with_name, name[with_name]);
               } else {
@@ -198,78 +200,78 @@ class BaseModelProvider extends ServiceProvider {
             });
           }
           for (let filter of filters) {
-            let [property, value, opt] = filter.split(':');
-            if (opt === 'like' && !value.includes(',')) value = `%${value}%`;
-            if (property.includes('.')) {
-              let [a, b, c] = property.split('.');
-              if (opt === 'whereDosentHave') {
-                query = query.whereDoesntHave(a, builder => {
+            let [property, value, opt] = filter.split(":");
+            if (opt === "like" && !value.includes(",")) value = `%${value}%`;
+            if (property.includes(".")) {
+              let [a, b, c] = property.split(".");
+              if (opt === "whereDosentHave") {
+                query = query.whereDoesntHave(a, (builder) => {
                   builder.where(b, value);
                 });
               } else {
                 if (c) {
-                  query = query.whereHas(a, builder1 => {
-                    builder1.whereHas(b, builder2 => {
-                      if (value.includes(',')) {
-                        if (opt == 'like') {
-                          let value_array = value.split(',');
+                  query = query.whereHas(a, (builder1) => {
+                    builder1.whereHas(b, (builder2) => {
+                      if (value.includes(",")) {
+                        if (opt == "like") {
+                          let value_array = value.split(",");
                           let first_value = value_array.shift();
-                          builder2.where(c, opt || '=', first_value);
+                          builder2.where(c, opt || "=", first_value);
                           for (let val of value_array) {
-                            builder2.orWhere(c, opt || '=', val);
+                            builder2.orWhere(c, opt || "=", val);
                           }
                         } else {
-                          builder2.whereIn(c, value.split(','));
+                          builder2.whereIn(c, value.split(","));
                         }
                       } else {
-                        builder2.where(c, opt || '=', value);
+                        builder2.where(c, opt || "=", value);
                       }
                     });
                   });
                 } else {
-                  query = query.whereHas(a, builder => {
-                    if (value.includes(',')) {
-                      if (opt == 'like') {
-                        let value_array = value.split(',');
+                  query = query.whereHas(a, (builder) => {
+                    if (value.includes(",")) {
+                      if (opt == "like") {
+                        let value_array = value.split(",");
                         let first_value = value_array.shift();
-                        builder.where(b, opt || '=', first_value);
+                        builder.where(b, opt || "=", first_value);
                         for (let val of value_array) {
-                          builder.orWhere(b, opt || '=', val);
+                          builder.orWhere(b, opt || "=", val);
                         }
                       } else {
-                        builder.whereIn(b, value.split(','));
+                        builder.whereIn(b, value.split(","));
                       }
                     } else {
-                      builder.where(b, opt || '=', value);
+                      builder.where(b, opt || "=", value);
                     }
                   });
                 }
               }
             } else {
-              if (value.includes(',')) {
-                if (opt === 'between') {
-                  query = query.whereBetween(property, value.split(','));
+              if (value.includes(",")) {
+                if (opt === "between") {
+                  query = query.whereBetween(property, value.split(","));
                 } else {
-                  query = query.whereIn(property, value.split(','));
+                  query = query.whereIn(property, value.split(","));
                 }
               } else {
-                query = query.where(property, opt || '=', value);
+                query = query.where(property, opt || "=", value);
               }
             }
           }
           return query;
         }
         static apply_sort(query, sort) {
-          let orderby_direction = 'DESC',
-            orderby_field = 'created_at';
-          let sorts = sort && sort.split(',');
+          let orderby_direction = "DESC",
+            orderby_field = "created_at";
+          let sorts = sort && sort.split(",");
           if (sorts && sorts.length) {
             for (let item of sorts) {
               orderby_field = item;
-              if (item.startsWith('-')) {
-                item = item.replace('-', '');
+              if (item.startsWith("-")) {
+                item = item.replace("-", "");
               } else {
-                orderby_direction = 'ASC';
+                orderby_direction = "ASC";
               }
               orderby_field = item;
             }
@@ -279,7 +281,7 @@ class BaseModelProvider extends ServiceProvider {
         }
       };
     });
-    this.app.alias('vrwebdesign-adonis/Helper/BaseModel', 'BaseModel');
+    this.app.alias("vrwebdesign-adonis/Helper/BaseModel", "BaseModel");
   }
 }
 
