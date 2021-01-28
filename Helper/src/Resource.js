@@ -22,10 +22,14 @@ class ResourceController {
   }
   async destroy({ response, request, params: { id } }) {
     let item = await this.Model.find(id);
-    item.is_deleted = true;
-    await item.save();
+    if (this.model.softDelete !== false) {
+      item.is_deleted = true;
+      await item.save();
+    }else{
+      await item.delete()
+    }
     response.send({
-      msg: "success"
+      msg: "success",
     });
   }
 
@@ -34,7 +38,7 @@ class ResourceController {
     item.is_deleted = false;
     await item.save();
     response.send({
-      msg: "success"
+      msg: "success",
     });
   }
 
