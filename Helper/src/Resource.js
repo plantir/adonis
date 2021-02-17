@@ -35,7 +35,7 @@ class ResourceController {
     item.$sideLoaded = {
       admin_id: auth && auth.user && auth.user.id,
     };
-    if (this.model.softDelete !== false) {
+    if (this.Model.softDelete !== false) {
       item.is_deleted = true;
       await item.save();
     } else {
