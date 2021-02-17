@@ -4,38 +4,54 @@ class ResourceController {
     let data = await this.Model.listOption(request.get() || null);
     response.send(data);
   }
-  async store({ response, request }) {
+
+  async store({ response, request, auth }) {
     let data = request.only(this.Model.allowField || []);
+    data.$sideLoaded = {
+      admin_id: auth && auth.user && auth.user.id,
+    };
     let item = await this.Model.create(data);
     response.status(201).send(item);
   }
+
   async show({ response, request, params: { id } }) {
     let item = await this.Model.find(id);
     response.status(200).send(item);
   }
-  async update({ response, request, params: { id } }) {
+
+  async update({ response, request, params: { id }, auth }) {
     const data = request.only(this.Model.allowField || []);
     let item = await this.Model.find(id);
     item.merge(data);
+    item.$sideLoaded = {
+      admin_id: auth && auth.user && auth.user.id,
+    };
     await item.save();
     response.status(200).send(item);
   }
-  async destroy({ response, request, params: { id } }) {
+
+  async destroy({ response, request, params: { id }, auth }) {
     let item = await this.Model.find(id);
+    item.$sideLoaded = {
+      admin_id: auth && auth.user && auth.user.id,
+    };
     if (this.model.softDelete !== false) {
       item.is_deleted = true;
       await item.save();
-    }else{
-      await item.delete()
+    } else {
+      await item.delete();
     }
     response.send({
       msg: "success",
     });
   }
 
-  async recycle({ response, request, params: { id } }) {
+  async recycle({ response, request, params: { id }, auth }) {
     let item = await this.Model.find(id);
     item.is_deleted = false;
+    item.$sideLoaded = {
+      admin_id: auth && auth.user && auth.user.id,
+    };
     await item.save();
     response.send({
       msg: "success",
