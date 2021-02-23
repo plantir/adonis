@@ -7,9 +7,11 @@ class ResourceController {
 
   async store({ response, request, auth }) {
     let data = request.only(this.Model.allowField || []);
-    data.$sideLoaded = {
-      admin_id: auth && auth.user && auth.user.id,
-    };
+    if (this.Model.history) {
+      data.$sideLoaded = {
+        admin_id: auth && auth.user && auth.user.id,
+      };
+    }
     let item = await this.Model.create(data);
     response.status(201).send(item);
   }
@@ -23,9 +25,11 @@ class ResourceController {
     const data = request.only(this.Model.allowField || []);
     let item = await this.Model.find(id);
     item.merge(data);
-    item.$sideLoaded = {
-      admin_id: auth && auth.user && auth.user.id,
-    };
+    if (this.Model.history) {
+      item.$sideLoaded = {
+        admin_id: auth && auth.user && auth.user.id,
+      };
+    }
     await item.save();
     response.status(200).send(item);
   }
