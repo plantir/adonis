@@ -25,6 +25,7 @@ class BaseModelProvider extends ServiceProvider {
             perPage,
             sort,
             withArray,
+            withCountArray,
             setVisible,
             setHidden,
           } = qs;
@@ -44,6 +45,16 @@ class BaseModelProvider extends ServiceProvider {
           }
           if (setVisible) {
             query.setVisible(setVisible);
+          }
+          if (withCountArray && withCountArray.length) {
+            withCountArray.forEach((name) => {
+              if (typeof name === "object") {
+                let with_name = Object.keys(name)[0];
+                query = query.withCount(with_name, name[with_name]);
+              } else {
+                query = query.withCount(name);
+              }
+            });
           }
           query = query.paginate(page, perPage);
           return query;
