@@ -7,11 +7,11 @@ class ResourceController {
 
   async store({ response, request, auth }) {
     let data = request.only(this.Model.allowField || []);
-    if (this.Model.history) {
-      data.$sideLoaded = {
-        admin_id: auth && auth.user && auth.user.id,
-      };
-    }
+    // if (this.Model.history) {
+    //   data.$sideLoaded = {
+    //     admin_id: auth && auth.user && auth.user.id,
+    //   };
+    // }
     let item = await this.Model.create(data);
     response.status(201).send(item);
   }
@@ -36,9 +36,11 @@ class ResourceController {
 
   async destroy({ response, request, params: { id }, auth }) {
     let item = await this.Model.find(id);
-    item.$sideLoaded = {
-      admin_id: auth && auth.user && auth.user.id,
-    };
+    if (this.Model.history) {
+      item.$sideLoaded = {
+        admin_id: auth && auth.user && auth.user.id,
+      };
+    }
     if (this.Model.softDelete !== false) {
       item.is_deleted = true;
       await item.save();
@@ -53,9 +55,11 @@ class ResourceController {
   async recycle({ response, request, params: { id }, auth }) {
     let item = await this.Model.find(id);
     item.is_deleted = false;
-    item.$sideLoaded = {
-      admin_id: auth && auth.user && auth.user.id,
-    };
+    if (this.Model.history) {
+      item.$sideLoaded = {
+        admin_id: auth && auth.user && auth.user.id,
+      };
+    }
     await item.save();
     response.send({
       msg: "success",
