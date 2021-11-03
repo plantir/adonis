@@ -275,12 +275,12 @@ class SMS {
             ) {
               resolve(this.message);
             } else {
-              reject(err);
+              reject(this.message);
             }
           }
         );
       } catch (error) {
-        reject(error);
+        reject(this.message);
       }
     });
   }
