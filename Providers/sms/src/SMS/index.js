@@ -68,7 +68,6 @@ class SMS {
     }
     return this;
   }
-
   async getCredit() {
     return new Promise((resolve, reject) => {
       request(
@@ -103,6 +102,7 @@ class SMS {
       this.template = this.config[this.connection_type].templates[view];
       return this._send_fast_sms();
     }
+   
     return this._sendSMS();
   }
 
@@ -219,16 +219,8 @@ class SMS {
   async _send_fast_sms() {
     return new Promise(async (resolve, reject) => {
       try {
-        let body;
-        let headers = {
-          "Content-Type": "application/json",
-        };
-        let method = "POST";
-        let url = this.config[this.connection_type].fast_url;
-        let query = null;
         if (this.connection_type == "sms_ir") {
           await this.getToken();
-          headers["x-sms-ir-secure-token"] = this.token;
           let ParameterArray = [];
           for (let key in this.data) {
             ParameterArray.push({
@@ -236,51 +228,63 @@ class SMS {
               ParameterValue: this.data[key],
             });
           }
-          body = {
+          let body = {
             ParameterArray,
             Mobile: this.to,
             TemplateId: this.template,
           };
+          request(
+            {
+              method: "POST",
+              url: this.config[this.connection_type].fast_url,
+              headers: {
+                "x-sms-ir-secure-token": this.token,
+                "Content-Type": "application/json",
+              },
+              body: body,
+              json: true,
+            },
+            (err, response) => {
+              response.body.IsSuccessful ? resolve(true) : reject(err);
+            }
+          );
         } else if (this.connection_type == "kavenegar") {
-          method = "GET";
-          query = {
+          let body;
+          let headers = {
+            "Content-Type": "application/json",
+          };
+          let method = "GET";
+          let query = {
             receptor: this.to,
             template: this.template,
           };
-          let index = 1;
+          let tokens = this.config[this.connection_type].tokens;
           for (let key in this.data) {
-            let token_key = index == 1 ? "" : index;
-            query["token" + token_key] = this.data[key];
-            index += 1;
+            query[tokens[this.template][key]] = this.data[key].replace(
+              / /g,
+              "‌"
+            );
           }
-        }
-        request(
-          {
-            method: method,
-            url: url,
-            qs: query,
-            headers: headers,
-            body: body,
-            json: true,
-          },
-          (err, response) => {
-            if (
-              this.connection_type == "sms_ir" &&
-              response.body.IsSuccessful
-            ) {
-              resolve(this.message);
-            } else if (
-              this.connection_type == "kavenegar" &&
-              response.statusCode == 200
-            ) {
-              resolve(this.message);
-            } else {
-              reject(this.message);
+          request(
+            {
+              method: method,
+              url: this.config[this.connection_type].fast_url,
+              qs: query,
+              headers: headers,
+              body: body,
+              json: true,
+            },
+            (err, response) => {
+              if (response.statusCode == 200) {
+                resolve(this.message);
+              } else {
+                reject(this.message);
+              }
             }
-          }
-        );
+          );
+        }
       } catch (error) {
-        reject(this.message);
+        reject(error);
       }
     });
   }
