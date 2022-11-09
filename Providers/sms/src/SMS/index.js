@@ -102,7 +102,7 @@ class SMS {
       this.template = this.config[this.connection_type].templates[view];
       return this._send_fast_sms();
     }
-   
+
     return this._sendSMS();
   }
 
@@ -259,7 +259,7 @@ class SMS {
             template: this.template,
           };
           let tokens = this.config[this.connection_type].tokens;
-          for (let key in this.data) {
+          for (let key in tokens[this.template]) {
             query[tokens[this.template][key]] = this.data[key].replace(
               / /g,
               "‌"
