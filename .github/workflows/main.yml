@@ -1,0 +1,18 @@
+on:
+  push:
+    branches:
+    - next
+    
+jobs:
+  my_job:
+    name: deploy to staging
+    runs-on: ubuntu-18.04
+    steps:
+    - name: executing remote ssh commands using password
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: 147.182.198.50
+        username: root
+        key: ${{ secrets.SSH_KEY }}
+        port: 22
+        script: whoami
