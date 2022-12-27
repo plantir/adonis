@@ -14,5 +14,5 @@ jobs:
         host: 45.86.87.173
         username: root
         key: ${{ secrets.SSH_KEY }}
-        port: 22
+        port: 2251
         script: whoami
