@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-    - next
+    - main
     
 jobs:
   my_job:
